@@ -125,8 +125,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // タスク追加時は選択カテゴリの見出し直下に挿入
   Future<void> _addTask() async {
-    final db = DBHelper();
-    final headerId = _categories[_categoryIndex];
+  await _loadEntries(); // 追加前にDBとdisplayListを同期
+  final db = DBHelper();
+  final headerId = _categories[_categoryIndex];
     // 1. headerのposition取得
     int headerIndex = _entries.indexWhere((e) => e.type == 'header' && e.title == headerId);
     if (headerIndex == -1) {
