@@ -1,86 +1,56 @@
 # TODOアプリ設計まとめ
 
-## DBデータ構造提案
+## DBデータ構造
 
 ```sql
 CREATE TABLE tasks (
-  id INTEGER PRIMARY KEY AUTOINCREMENT, -- タスクID
-  title TEXT NOT NULL,                 -- タスク内容
-  category TEXT CHECK(category IN ('緊急','重要','通常')), -- カテゴリ
-  completed BOOLEAN DEFAULT 0,         -- 完了フラグ
-  position INTEGER                     -- 並び順
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  category TEXT CHECK(category IN ('緊急','重要','通常')),
+  completed BOOLEAN DEFAULT 0,
+  position INTEGER
 );
 ```
 
-- **id**: タスクの一意なID（自動採番）
-- **title**: タスク内容（必須）
-- **category**: 「緊急」「重要」「通常」のいずれか
-- **completed**: 完了状態（0:未完了, 1:完了）
-- **position**: 表示順（ドラッグ＆ドロップで変更）
+- **id**: タスクの一意なID
+- **title**: タスク内容
+- **category**: 「緊急」「重要」「通常」
+- **completed**: 完了状態
+- **position**: 並び順（「通常」「重要」のみ使用。緊急は未使用）
 
-今後拡張する場合は、期限やメモ欄などのカラム追加も可能です。
+**修正点:**  
+- 「緊急」カテゴリのheaderはDBに保存しない。  
+- DB初期化時は「通常」「重要」headerのみ作成。  
+- 緊急headerはUIでのみ表示。
 
-## 機能シーケンス
+## 機能シーケンス（要点）
 
-### タスク追加
+- タスク追加・削除・完了状態はUIキャッシュ（displayList）に即時反映、DBは非同期更新
+- タスク追加時、入力欄はフォーカス維持で連続追加可能
+- 入力欄左右キーでカテゴリ変更
+- 緊急カテゴリはheaderプロパティで表示、childrenには含めない
+
+## Mermaid記法シーケンス（例：タスク追加）
+
 ```mermaid
 sequenceDiagram
     participant User
     participant UI
     participant DB
-    User->>UI: 新規タスク入力＋追加ボタン
-    UI->>DB: タスク追加SQL実行
-    DB-->>UI: 追加結果返却
-    UI-->>User: タスク一覧更新
-```
-
-### タスク削除
-```mermaid
-sequenceDiagram
-    participant User
-    participant UI
-    participant DB
-    User->>UI: 削除ボタン押下
-    UI->>DB: タスク削除SQL実行
-    DB-->>UI: 削除結果返却
-    UI-->>User: タスク一覧更新
-```
-
-### タスク編集
-```mermaid
-sequenceDiagram
-    participant User
-    participant UI
-    participant DB
-    User->>UI: タスク内容編集
-    UI->>DB: タスク更新SQL実行
-    DB-->>UI: 更新結果返却
-    UI-->>User: タスク一覧更新
-```
-
-### タスク完了（チェック）
-```mermaid
-sequenceDiagram
-    participant User
-    participant UI
-    participant DB
-    User->>UI: チェックボックスON/OFF
-    UI->>DB: 完了状態更新SQL実行
-    DB-->>UI: 更新結果返却
-    UI-->>User: タスク一覧更新（打ち消し線/グレーアウト）
+    User->>UI: 新規タスク入力＋Enter/追加ボタン
+    UI->>UI: displayListに即時追加
+    UI->>DB: タスク非同期追加
+    UI-->>User: 入力欄フォーカス維持
 ```
 
 ## 設計方針
-- UI/DB分離
-- すべての操作はDB永続化
-- ユーザー操作は即座にUI反映
+- UIはdisplayList（キャッシュ）を参照
+- DB更新は非同期
+- 緊急headerはDBに保存せずUIでのみ表示
+- すべての操作は即座にUI反映
 - DBエラー時は通知
 
 ## データ保存設計
 
-- データの保存先は、Linuxデスクトップ標準のユーザーデータディレクトリ `~/.local/share/<appname>/` とする。
-    - `<appname>` には本アプリの名称（例: `todo-widget` など）が入る。
-    - SQLiteデータベースファイルや設定ファイル等はこのディレクトリ内に格納する。
-    - 例: `~/.local/share/todo-widget/todo.db`
-- この設計により、ユーザーごとにデータが分離され、他アプリとの干渉を防ぐ。
-- バックアップや移行時も、当該ディレクトリをコピーすることで容易に対応可能。
+- データ保存先は `~/.local/share/<appname>/`
+- SQLiteデータベースファイルはこのディレクトリ内に格納
