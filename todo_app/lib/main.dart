@@ -96,6 +96,7 @@ class _MyHomePageState extends State<MyHomePage> {
   List<ListEntry> displayList = [];
 
   final TextEditingController _titleController = TextEditingController();
+  final FocusNode _titleFocusNode = FocusNode();
   int _categoryIndex = 0; // 0:通常, 1:重要, 2:緊急
   final List<String> _categories = ['通常', '重要', '緊急'];
 
@@ -255,12 +256,15 @@ class _MyHomePageState extends State<MyHomePage> {
                         flex: 3,
                         child: TextField(
                           controller: _titleController,
+                          focusNode: _titleFocusNode,
                           decoration: const InputDecoration(
                             labelText: 'タスク内容',
                           ),
-                          onSubmitted: (val) {
+                          onSubmitted: (val) async {
                             if (val.trim().isNotEmpty) {
-                              _addTask();
+                              await _addTask();
+                              // 再度フォーカスを当てる
+                              FocusScope.of(context).requestFocus(_titleFocusNode);
                             }
                           },
                         ),
