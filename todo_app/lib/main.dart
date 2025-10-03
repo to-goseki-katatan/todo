@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'db_helper.dart';
-import 'task.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:flutter/services.dart';
 
@@ -86,9 +85,9 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   // ...existing code...
-  // キーイベントでカテゴリ変更
-  void _handleTextFieldKey(RawKeyEvent event) {
-    if (event is RawKeyDownEvent) {
+  // KeyEventでカテゴリ変更
+  void _handleTextFieldKey(KeyEvent event) {
+    if (event is KeyDownEvent) {
       if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
         setState(() {
           if (_categoryIndex > 0) _categoryIndex--;
@@ -162,7 +161,7 @@ class _MyHomePageState extends State<MyHomePage> {
     await db.insertEntry(newEntry.toMap());
     _titleController.clear();
     setState(() {
-      int headerIdx = displayList.indexWhere((e) => e is GroupHeader && (e as GroupHeader).groupName == headerId);
+      int headerIdx = displayList.indexWhere((e) => e is GroupHeader && e.groupName == headerId);
       if (headerIdx != -1) {
         displayList.insert(headerIdx + 1, ItemEntry(id: newEntry.id, name: newEntry.title, completed: false));
       } else {
@@ -176,7 +175,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final db = DBHelper();
     await db.deleteEntry(id);
     setState(() {
-      displayList.removeWhere((e) => e is ItemEntry && (e as ItemEntry).id == id);
+      displayList.removeWhere((e) => e is ItemEntry && e.id == id);
     });
     await _loadEntries();
   }
@@ -271,8 +270,21 @@ class _MyHomePageState extends State<MyHomePage> {
                       Expanded(
                         flex: 3,
                         child: RawKeyboardListener(
-                          focusNode: FocusNode(), // 新しいFocusNodeを使う
-                          onKey: _handleTextFieldKey,
+                          focusNode: FocusNode(),
+                          onKey: (event) {
+                            // RawKeyEvent -> KeyEvent変換
+                            if (event is RawKeyDownEvent) {
+                              if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+                                setState(() {
+                                  if (_categoryIndex > 0) _categoryIndex--;
+                                });
+                              } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+                                setState(() {
+                                  if (_categoryIndex < _categories.length - 1) _categoryIndex++;
+                                });
+                              }
+                            }
+                          },
                           child: TextField(
                             controller: _titleController,
                             focusNode: _titleFocusNode,
@@ -282,7 +294,6 @@ class _MyHomePageState extends State<MyHomePage> {
                             onSubmitted: (val) async {
                               if (val.trim().isNotEmpty) {
                                 await _addTask();
-                                // 再度フォーカスを当てる
                                 FocusScope.of(context).requestFocus(_titleFocusNode);
                               }
                             },
