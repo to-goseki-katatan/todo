@@ -1,5 +1,5 @@
 # TODOアプリ（Flutter版）
-
+![アプリ起動イメージ](image.png)
 ## 概要
 - Ubuntu/Linux向けウィジェット風TODOアプリ
 - Flutterデスクトップ対応
@@ -64,6 +64,27 @@ todo/
 ### 開発Tips
 - DB構造やUI仕様は `doc/` 以下の設計資料を参照
 - 変更・拡張時は設計資料も随時更新
+
+## リリースビルド方法（Linux）
+
+1. リリースビルド作成
+   ```bash
+   flutter build linux
+   ```
+   - 実行ファイルは `build/linux/x64/release/bundle/` に生成されます。
+
+2. 本番環境での実行
+   ```bash
+   ./build/linux/x64/release/bundle/todo_app
+   ```
+   - 必要に応じて依存ライブラリ（libgtk等）をインストールしてください。
+
+## GitHubリリース公開手順
+
+1. リリースビルド後、`build/linux/x64/release/bundle/` ディレクトリの内容（`todo_app` 実行ファイルなど）をzip等でまとめる
+2. GitHubリポジトリの「Releases」ページで新しいリリースを作成
+3. 作成したzipファイルを「Assets」としてアップロード
+4. リリースノートやバージョン情報を記載
 
 ---
 
