@@ -129,20 +129,8 @@ class _MyHomePageState extends State<MyHomePage> {
   final db = DBHelper();
   final headerId = _categories[_categoryIndex];
     // 1. headerのposition取得
-    int headerIndex = _entries.indexWhere((e) => e.type == 'header' && e.title == headerId);
-    if (headerIndex == -1) {
-      final headerEntry = Entry(
-        id: DateTime.now().millisecondsSinceEpoch.toString() + '_header',
-        type: 'header',
-        title: headerId,
-        completed: false,
-        position: _entries.length,
-      );
-      await db.insertEntry(headerEntry.toMap());
-      await _loadEntries();
-      headerIndex = _entries.indexWhere((e) => e.type == 'header' && e.title == headerId);
-    }
-    final headerPos = _entries[headerIndex].position;
+    int headerIndex = headerId == '緊急' ? -1 : _entries.indexWhere((e) => e.type == 'header' && e.title == headerId);
+    final headerPos = headerIndex == -1 ? -1 :_entries[headerIndex].position;
     // 2. header.positionより大きい全レコードのpositionを+1
     for (final entry in _entries) {
       if (entry.position > headerPos) {
@@ -152,7 +140,8 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     // 3. 新itemをheader.position+1で追加
     final newId = DateTime.now().millisecondsSinceEpoch.toString();
-    final newEntry = Entry(id: newId, type: 'item', title: _titleController.text, completed: false, position: headerPos + 1);
+    int insertPos = headerId == '緊急' ? 0 : headerPos + 1;
+    final newEntry = Entry(id: newId, type: 'item', title: _titleController.text, completed: false, position: insertPos);
     await db.insertEntry(newEntry.toMap());
     _titleController.clear();
     setState(() {

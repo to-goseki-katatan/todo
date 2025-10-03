@@ -66,9 +66,9 @@ class DBHelper {
     ''');
     // 初期カテゴリheader追加
     final headers = [
-      {'id': 'header_urgent', 'type': 'header', 'title': '緊急', 'completed': 0, 'position': 0},
-      {'id': 'header_important', 'type': 'header', 'title': '重要', 'completed': 0, 'position': 1},
-      {'id': 'header_normal', 'type': 'header', 'title': '通常', 'completed': 0, 'position': 2},
+    //   {'id': 'header_urgent', 'type': 'header', 'title': '緊急', 'completed': 0, 'position': 0},
+      {'id': 'header_important', 'type': 'header', 'title': '重要', 'completed': 0, 'position': 0},
+      {'id': 'header_normal', 'type': 'header', 'title': '通常', 'completed': 0, 'position': 1},
     ];
     for (final h in headers) {
       await db.insert('entries', h);
