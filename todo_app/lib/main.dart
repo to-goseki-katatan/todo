@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'db_helper.dart';
 import 'task.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:flutter/services.dart';
 
 // モデルクラス（カテゴリ情報をItemEntryから除去）
 abstract class ListEntry {}
@@ -84,6 +85,21 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  // ...existing code...
+  // キーイベントでカテゴリ変更
+  void _handleTextFieldKey(RawKeyEvent event) {
+    if (event is RawKeyDownEvent) {
+      if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+        setState(() {
+          if (_categoryIndex > 0) _categoryIndex--;
+        });
+      } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+        setState(() {
+          if (_categoryIndex < _categories.length - 1) _categoryIndex++;
+        });
+      }
+    }
+  }
   Widget _buildEmergencyHeader() {
     return Padding(
       key: ValueKey('header_緊急'),
@@ -254,19 +270,23 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: [
                       Expanded(
                         flex: 3,
-                        child: TextField(
-                          controller: _titleController,
-                          focusNode: _titleFocusNode,
-                          decoration: const InputDecoration(
-                            labelText: 'タスク内容',
+                        child: RawKeyboardListener(
+                          focusNode: FocusNode(), // 新しいFocusNodeを使う
+                          onKey: _handleTextFieldKey,
+                          child: TextField(
+                            controller: _titleController,
+                            focusNode: _titleFocusNode,
+                            decoration: const InputDecoration(
+                              labelText: 'タスク内容',
+                            ),
+                            onSubmitted: (val) async {
+                              if (val.trim().isNotEmpty) {
+                                await _addTask();
+                                // 再度フォーカスを当てる
+                                FocusScope.of(context).requestFocus(_titleFocusNode);
+                              }
+                            },
                           ),
-                          onSubmitted: (val) async {
-                            if (val.trim().isNotEmpty) {
-                              await _addTask();
-                              // 再度フォーカスを当てる
-                              FocusScope.of(context).requestFocus(_titleFocusNode);
-                            }
-                          },
                         ),
                       ),
                       SizedBox(width: 16),
