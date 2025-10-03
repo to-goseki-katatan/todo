@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=TODO Widget
+Exec=flutter run --release
+Icon=todo-widget
+Comment=TODOリスト管理ウィジェット
+Categories=Utility;
+StartupNotify=false
+Terminal=false
