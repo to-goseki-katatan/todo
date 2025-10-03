@@ -1,0 +1,3 @@
+# Ignore implementation tasks doc
+/doc/implementation_tasks.md
+# ...existing ignore rules...
